@@ -1,0 +1,3 @@
+services:
+  flower_classifier:
+    build: ./flower_classifier
