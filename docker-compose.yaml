@@ -46,6 +46,7 @@ services:
       --allow-root
       --NotebookApp.token=
       --NotebookApp.password=
+      --ContentsManager.allow_hidden=True
 
 volumes:
   torch_cache:

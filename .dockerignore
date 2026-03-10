@@ -12,4 +12,4 @@ data/interim/
 data/processed/
 data/downloads/
 
-project/outputs/
+flower-classifier/outputs/
