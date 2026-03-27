@@ -1,23 +1,27 @@
+# Cache files
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .ipynb_checkpoints/
-.env
 .git
 .gitignore
 *Trash*
 
+# Dataset and binaries
 data/raw/
 data/interim/
 data/processed/
 data/downloads/
-
 flower-classifier/outputs/
-
 
 # Dataset binary from Kaggle
 data/
 
+# Config files
+.env
+data.yaml
+
+# Personal notes or removed code
 notes/
 .disabled
