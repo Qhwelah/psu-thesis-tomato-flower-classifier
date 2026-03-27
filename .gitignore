@@ -20,7 +20,7 @@ data/
 
 # Config files
 .env
-data.yaml
+config/
 
 # Personal notes or removed code
 notes/
