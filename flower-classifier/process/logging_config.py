@@ -1,5 +1,6 @@
 import logging
 import os, sys
+from ultralytics.utils import LOGGER as YOLO_LOGGER
 
 LOG_FILE_ROOT = os.path.dirname(__file__)
 
@@ -11,23 +12,36 @@ def setup_logging(log_file: str|None = None) -> logging.Logger:
 
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
 
-    # Configure logger
-    ## Logging to specified log_file
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        filename=log_file,
-        filemode='w'
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
-    ## Logging to console
+    # Main app logger
+    logger = logging.getLogger("app")
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False
+
+    # Prevent duplicate handlers in Jupyter if re-running cells
+    logger.handlers.clear()
+
+    # File handler: overwrite each run
+    file_handler = logging.FileHandler(log_file, mode='w', encoding='utf-8')
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+
+    # Console handler
     console_handler = logging.StreamHandler(sys.stderr)
     console_handler.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     console_handler.setFormatter(formatter)
-    logging.getLogger('').addHandler(console_handler)
 
-    ## Final config
-    logger = logging.getLogger(__name__)
-    logger.info(f"Writing log to the following location: '{log_file}'")
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+
+    # Attach SAME file handler to Ultralytics logger
+    # Avoid duplicate attachment if this function is rerun
+    if file_handler not in YOLO_LOGGER.handlers:
+        YOLO_LOGGER.addHandler(file_handler)
+
+    logger.info("Writing log to: '%s'", log_file)
+
     return logger
