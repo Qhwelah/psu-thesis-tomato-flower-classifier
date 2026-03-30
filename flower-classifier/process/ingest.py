@@ -6,6 +6,9 @@ import shutil
 import random
 import yaml
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 # # ==========================
 # # CONFIG
@@ -61,9 +64,9 @@ def ingest(
     val_files = image_files[:split_idx]
     test_files = image_files[split_idx:]
 
-    print(f"Total source images: {len(image_files)}")
-    print(f"Validation images:   {len(val_files)}")
-    print(f"Test images:         {len(test_files)}")
+    logger.info(f"Total source images: {len(image_files)}")
+    logger.info(f"Validation images:   {len(val_files)}")
+    logger.info(f"Test images:         {len(test_files)}")
 
     # ==========================
     # MOVE IMAGE + LABEL PAIR
@@ -78,7 +81,7 @@ def ingest(
         if label_path.exists():
             shutil.copy2(str(label_path), str(dest_label_dir / label_path.name))
         else:
-            print(f"WARNING! Missing label for image: {img_path.name}")
+            logger.warning(f"Missing label for image: {img_path.name}")
 
     # Move val split
     for img in val_files:
@@ -88,7 +91,7 @@ def ingest(
     for img in test_files:
         move_pair(img, source_labels, test_images, test_labels)
 
-    print("DONE! Split complete.")
+    logger.info("DONE! Split complete.")
 
 
 
@@ -101,10 +104,10 @@ def ingest(
         img_count = len([p for p in img_dir.iterdir() if p.is_file()]) if img_dir.exists() else 0
         lbl_count = len([p for p in lbl_dir.iterdir() if p.is_file()]) if lbl_dir.exists() else 0
 
-        print(f"{split.upper()}:")
-        print(f"  images = {img_count}")
-        print(f"  labels = {lbl_count}")
-        print()
+        logger.info(f"{split.upper()}:")
+        logger.info(f"  images = {img_count}")
+        logger.info(f"  labels = {lbl_count}")
+        logger.info()
 
 
 
@@ -124,8 +127,8 @@ def ingest(
     with open(data_yaml_path, "w") as f:
         yaml.safe_dump(data_config, f, sort_keys=False)
 
-    print(f"DONE! Wrote data.yaml to: {data_yaml_path}")
-    print(data_yaml_path.read_text())
+    logger.info(f"DONE! Wrote data.yaml to: {data_yaml_path}")
+    logger.info(data_yaml_path.read_text())
 
 
 
