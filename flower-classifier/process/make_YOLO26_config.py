@@ -1,0 +1,49 @@
+import json
+
+def make_YOLO26_config(file_path = '/workspace/flower-classifier/config/YOLO26_config.json'):
+    """
+    Creates a config file at the specified file path with all the YOLO26 config fields with default values.
+    """
+
+    TRAIN_CONFIG = {
+        "model_cfg": "yolo26n.yaml",
+        "data_yaml": "/workspace/flower-classifier/config/data.yaml",
+        "project_dir": "/workspace/flower-classifier/runs",
+        "run_name": "tomato_flower_yolo26_from_scratch",
+        "train_params": {
+            "epochs": 100,
+            "imgsz": 640,
+            "batch": 16,
+            "device": "cpu",
+            "workers": 4,
+            "patience": 30,
+            "optimizer": "auto",
+            "lr0": 0.01,
+            "lrf": 0.01,
+            "momentum": 0.937,
+            "weight_decay": 0.0005,
+            "warmup_epochs": 3.0,
+            "warmup_momentum": 0.8,
+            "warmup_bias_lr": 0.1,
+            "box": 7.5,
+            "cls": 0.5,
+            "dfl": 1.5,
+            "close_mosaic": 10,
+            "single_cls": False,
+            "cos_lr": False,
+            "amp": False,
+            "plots": True,
+            "save": True,
+            "save_period": -1,
+            "exist_ok": True,
+            "pretrained": False,
+            "verbose": True
+        }
+    }
+
+    try:
+        with open(file_path, 'w') as json_file:
+            json.dump(TRAIN_CONFIG, json_file, indent=4)
+        print(f"Data successfully saved to {file_path}")
+    except IOError as e:
+        print(f"Error saving file: {e}")
