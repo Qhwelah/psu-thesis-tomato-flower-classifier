@@ -104,11 +104,11 @@ def ingest(
         img_count = len([p for p in img_dir.iterdir() if p.is_file()]) if img_dir.exists() else 0
         lbl_count = len([p for p in lbl_dir.iterdir() if p.is_file()]) if lbl_dir.exists() else 0
 
-        logger.info(f"{split.upper()}:")
-        logger.info(f"  images = {img_count}")
-        logger.info(f"  labels = {lbl_count}")
-        logger.info()
-
+        logger.info(f" \
+            \n {split.upper()}: \
+            \n   images = {img_count} \
+            \n   labels = {lbl_count} \
+            \n ")
 
 
     ## DATA YAML UPDATER
