@@ -15,6 +15,7 @@ data/processed/
 data/downloads/
 flower-classifier/outputs/
 runs/
+*.log
 
 # Dataset binary from Kaggle
 data/
