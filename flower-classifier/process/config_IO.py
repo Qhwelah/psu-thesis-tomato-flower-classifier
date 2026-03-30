@@ -1,4 +1,24 @@
+from pathlib import Path
 import json
+
+DEFAULT_LOCATION = Path("/workspace/flower-classifier/config/YOLO26_config.json")
+
+
+def save_json_config(config: dict, path: str | Path = DEFAULT_LOCATION):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(config, f, indent=2)
+    print(f"DONE! Saved config to {path}")
+
+
+def load_json_config(path: str | Path = DEFAULT_LOCATION) -> dict:
+    path = Path(path)
+    with open(path, "r") as f:
+        config = json.load(f)
+    print(f"DONE! Loaded config from {path}")
+    return config
+
 
 def make_YOLO26_config(file_path = '/workspace/flower-classifier/config/YOLO26_config.json'):
     """
