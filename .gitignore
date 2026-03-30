@@ -14,6 +14,7 @@ data/interim/
 data/processed/
 data/downloads/
 flower-classifier/outputs/
+runs/
 
 # Dataset binary from Kaggle
 data/
