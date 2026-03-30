@@ -9,6 +9,7 @@ matplotlib
 scikit-learn
 pillow
 opencv-python
+python-dotenv
 
 torch
 torchvision
