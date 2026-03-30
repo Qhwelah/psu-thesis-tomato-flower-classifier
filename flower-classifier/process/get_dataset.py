@@ -1,9 +1,12 @@
 import os, kaggle, pandas, zipfile
+import logging
 from dotenv import load_dotenv
 
 # load_dotenv()
 # KAGGLE_USERNAME = os.getenv('KAGGLE_USERNAME')
 # KAGGLE_KEY = os.getenv('KAGGLE_KEY')
+
+logger = logging.getLogger(__name__)
 
 def get_dataset(from_kaggle = False, kaggle_username = "", kaggle_key = ""):
     """
@@ -11,6 +14,8 @@ def get_dataset(from_kaggle = False, kaggle_username = "", kaggle_key = ""):
     """
 
     if from_kaggle:
+        logger.info(f"Retrieving dataset from kaggle...")
+
         # Retrieve sign-in data 
         KAGGLE_USERNAME = kaggle_username
         KAGGLE_KEY = kaggle_key
@@ -24,12 +29,15 @@ def get_dataset(from_kaggle = False, kaggle_username = "", kaggle_key = ""):
 
     else:
         # default to google drive download
+        logger.info(f"Retrieving dataset from google drive...")
+        logger.warning(f"NOT YET SET UP")
         pass
 
 
     # Extract dataset zip
     path_to_zip_file = download_path + '/tomato-flower-3-class.zip'
     directory_to_extract_to = '/workspace/data/data_set'
+    logger.info(f"Extracting files to directory: '{directory_to_extract_to}'")
 
 
     # Create the destination directory if it doesn't exist
@@ -43,4 +51,4 @@ def get_dataset(from_kaggle = False, kaggle_username = "", kaggle_key = ""):
         zip_ref.extractall(directory_to_extract_to)
 
 
-    print(f"Files extracted to: {directory_to_extract_to}")
+    logger.info(f"Files extracted successfully!")
