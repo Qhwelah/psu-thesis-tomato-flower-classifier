@@ -8,7 +8,7 @@ def setup_logging(log_file: str|None = None) -> logging.Logger:
 
     # Define a default log name if not specified by caller.
     if not log_file:
-        log_file = os.path.join(LOG_FILE_ROOT, "app.log")
+        log_file = os.path.join(LOG_FILE_ROOT, "flower_classifier.log")
 
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
 
