@@ -19,7 +19,7 @@ def get_dataset(from_kaggle = False, kaggle_username = "", kaggle_key = ""):
         # Retrieve sign-in data 
         KAGGLE_USERNAME = kaggle_username
         KAGGLE_KEY = kaggle_key
-        kaggle.api.authenticate()
+        #kaggle.api.authenticate()
 
 
         # Download dataset zip
