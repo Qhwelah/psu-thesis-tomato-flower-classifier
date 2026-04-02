@@ -7,6 +7,7 @@ __pycache__/
 .git
 .gitignore
 *Trash*
+*.egg*
 
 # Dataset and binaries
 data/raw/
