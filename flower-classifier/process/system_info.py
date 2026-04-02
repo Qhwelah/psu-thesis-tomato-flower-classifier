@@ -26,3 +26,14 @@ def print_system_info():
         \n Executable {sys.executable} \
         \n Platform {platform.platform()} \
         \n")
+
+
+def verify_venv() -> bool:
+
+    is_venv = sys.prefix != sys.base_prefix
+    if is_venv:
+        logger.info("Jupyter is running in venv!")
+        return True
+
+    logger.warning("Jupyter is NOT running in venv!")
+    return False
