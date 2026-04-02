@@ -1,0 +1,52 @@
+[project]
+name = "flower-classifier"
+version = "0.1.0"
+description = "YOLO-based flower classification with XAI"
+authors = [{ name = "qhwelah" }]
+requires-python = ">=3.10"
+
+dependencies = [
+    # Core
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "scikit-learn",
+    "pillow",
+    "opencv-python",
+    "python-dotenv",
+
+    # ML
+    "torch",
+    "torchvision",
+    "torchaudio",
+    "ultralytics",
+
+    # XAI
+    "captum",
+    "grad-cam",
+
+    # Utilities
+    "kaggle",
+    "pyyaml",
+    "tqdm",
+    "seaborn",
+
+    # Jupyter
+    "jupyterlab",
+    "notebook",
+    "ipykernel",
+    "ipywidgets"
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = [
+    "get_dataset",
+    "ingest",
+    "config_IO",
+    "system_info",
+    "view_file"
+]
