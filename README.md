@@ -1,6 +1,14 @@
 # psu-thesis-tomato-flower-classifier
 A project containing the working code and data for a ResNet-based tomato flower growth stage classifier. This is for a final Honors Thesis at Penn State Harrisburg for the Schreyer's Honors College.
 
+## Environment Vars
+- Before running the script, you must create a `.env` file with your Kaggle login info.
+- At `flower-classifier/process/.env`, create a file containing config for:
+```.env
+KAGGLE_USERNAME=
+KAGGLE_KEY=
+```
+
 ## Setup
 1. run `bash ./setup.sh`
 	- this sets up the python virtual environment and configures it for use in jupyter.
@@ -33,3 +41,9 @@ A project containing the working code and data for a ResNet-based tomato flower 
 - venv use
 	- To enter an already running venv, use `source venv/bin/activate`
 	- To exit from a venv, use `deactivate`
+
+## Running the ML
+- To run the ML process, first create the `.env` file and follow the `setup` instructions above.
+- Then, run all of the cells in succession in `flower-classifier/process/flower_classifier.ipynb`
+- There will be a log file with running outputs of ALL cells (including YOLO training process) for later reference.
+	- This log file will be deleted and remade every time the `logging_config` cell is run.
