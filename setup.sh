@@ -7,9 +7,6 @@ uv venv
 echo "Activating environment..."
 source .venv/bin/activate
 
-echo "Upgrading pip..."
-python -m pip install --upgrade pip
-
 echo "Installing project..."
 uv pip install -e .
 
