@@ -24,6 +24,9 @@ data/
 .env
 config/
 
+# Virtual environment
+.venv/
+
 # Personal notes or removed code
 notes/
 .disabled
