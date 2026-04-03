@@ -3,7 +3,7 @@ import logging
 from dotenv import load_dotenv
 from pathlib import Path
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"flower_classifier.{__name__}")
 
 path = Path(__file__).resolve().parent
 while path.name != "flower-classifier" and path != path.parent:
@@ -12,12 +12,17 @@ logger.info(f"Path to project parent directory: '{path}'")
 project_root = path
 
 
-def get_dataset(from_kaggle:bool = False, kaggle_username:str = "", kaggle_key:str = "", google_drive_url:str = ""):
+def get_dataset(from_kaggle:bool = False, kaggle_username:str = "", kaggle_key:str = "", google_zip_id:str = "") -> bool:
     """
     Downloads zipped dataset from kaggle or mounted google drive
     """
 
     download_path = project_root / 'data' / 'compressed'
+    output_location = str(download_path / 'tomato-flower-3-class.zip')
+
+    if Path(output_location).is_file():
+        logger.info(f"zip file already exists at '{output_location}', skipping download.")
+        return False
     
     if from_kaggle:
         logger.info(f"Retrieving dataset from kaggle...")
@@ -42,11 +47,14 @@ def get_dataset(from_kaggle:bool = False, kaggle_username:str = "", kaggle_key:s
         logger.info(f"Retrieving dataset from google drive...")
         
         import gdown
-
-        output_location = str(download_path / 'tomato-flower-3-class.zip')
-        logger.info(f"Downloading compressed dataset via Google Drive to '{output_location}'")
         
-        gdown.download(google_drive_url, output_location, quiet=False)
+        logger.info(f"Downloading compressed dataset via Google Drive to '{output_location}'")
+        logger.debug(f"Downloading from google file id: '{google_zip_id}'")
+        
+        gdown.download(id=google_zip_id, output=output_location, quiet=False)
+
+    logger.info("Download complete!")
+    return True
 
 
 def unzip_dataset():
