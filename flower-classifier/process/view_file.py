@@ -2,7 +2,7 @@ from IPython.display import Image, display
 from pathlib import Path
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"flower_classifier.{__name__}")
 
 def view_image(path: str | Path):
     try:

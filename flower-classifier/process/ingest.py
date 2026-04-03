@@ -8,7 +8,7 @@ import yaml
 import os
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"flower_classifier.{__name__}")
 
 # # ==========================
 # # CONFIG
@@ -19,14 +19,24 @@ logger = logging.getLogger(__name__)
 # RANDOM_SEED = 42
 
 def ingest(
-        dataset_root=Path("/workspace/data/data_set/tomato-flower"), 
-        source_dir=Path("/workspace/data/data_set/tomato-flower/valid"), 
+        dataset_root="", 
+        source_dir="", 
         val_ratio=0.5, 
         random_seed=42):
     """
     Extracts the zipped dataset and prepares the project directory.
     """
 
+    path = Path(__file__).resolve().parent
+    while path.name != "flower-classifier" and path != path.parent:
+        path = path.parent
+    project_root = path
+        
+    if len(dataset_root) < 1:
+        dataset_root = project_root / 'data' / 'data_set' / 'tomato-flower'
+    if len(source_dir) < 1:
+        source_dir = project_root / 'data' /'data_set' / 'tomato-flower' / 'valid'
+    
     # ==========================
     # PATHS
     # ==========================
@@ -113,13 +123,13 @@ def ingest(
 
     ## DATA YAML UPDATER
     ## CREATES THE NEW DATA CONFIG FILE FOR THE NEW FOLDERS
-    data_yaml_path = Path("/workspace/flower-classifier/config/data.yaml")
+    data_yaml_path = project_root / 'config' / 'data.yaml'
     data_yaml_path.parent.mkdir(parents=True, exist_ok=True)
 
     data_config = {
-        "train": "/workspace/data/data_set/tomato-flower/train/images",
-        "val": "/workspace/data/data_set/tomato-flower/val/images",
-        "test": "/workspace/data/data_set/tomato-flower/test/images",
+        "train": str(project_root / 'data/data_set/tomato-flower/train/images'),
+        "val": str(project_root / "data/data_set/tomato-flower/val/images"),
+        "test": str(project_root / "data/data_set/tomato-flower/test/images"),
         "nc": 3,
         "names": ["Bud", "Anthesis", "Post-Anthesis"],
     }
@@ -134,5 +144,5 @@ def ingest(
 
     ## CREATE RUNS DIRECTORY
     ## If the directory where runout files will be stored does not yet exist, make it.
-    directory_path = '/workspace/flower-classifier/runs'
-    os.makedirs(directory_path, exist_ok=True)
+    directory_path = project_root / 'flower-classifier/runs'
+    os.makedirs(str(directory_path), exist_ok=True)

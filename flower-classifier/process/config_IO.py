@@ -2,7 +2,7 @@ from pathlib import Path
 import json
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"flower_classifier.{__name__}")
 
 DEFAULT_LOCATION = Path("/workspace/flower-classifier/config/YOLO26_config.json")
 
