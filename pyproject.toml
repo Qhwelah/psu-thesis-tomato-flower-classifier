@@ -27,6 +27,7 @@ dependencies = [
 
     # Utilities
     "kaggle",
+    "gdown",
     "pyyaml",
     "tqdm",
     "seaborn",
