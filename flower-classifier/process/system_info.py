@@ -7,7 +7,7 @@ import captum
 import sys, platform
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"flower_classifier.{__name__}")
 
 
 def print_system_info():

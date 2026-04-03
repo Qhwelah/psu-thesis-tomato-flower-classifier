@@ -1,23 +1,27 @@
 import logging
 import os, sys
+from pathlib import Path
 from ultralytics.utils import LOGGER as YOLO_LOGGER
 
-LOG_FILE_ROOT = os.path.dirname(__file__)
+LOG_FILE_ROOT = Path(__file__).resolve().parent
+BASE_LOGGER_NAME = "flower_classifier"
 
 def setup_logging(log_file: str|None = None) -> logging.Logger:
 
     # Define a default log name if not specified by caller.
     if not log_file:
-        log_file = os.path.join(LOG_FILE_ROOT, "flower_classifier.log")
+        log_file = str(LOG_FILE_ROOT / "flower_classifier.log")
 
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    log_path = Path(log_file)
+    #os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
 
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
     # Main app logger
-    logger = logging.getLogger("app")
+    logger = logging.getLogger(BASE_LOGGER_NAME)
     logger.setLevel(logging.DEBUG)
     logger.propagate = False
 
@@ -30,7 +34,7 @@ def setup_logging(log_file: str|None = None) -> logging.Logger:
     file_handler.setFormatter(formatter)
 
     # Console handler
-    console_handler = logging.StreamHandler(sys.stderr)
+    console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)
 
