@@ -1,18 +1,24 @@
-import os, kaggle, pandas, zipfile
+import os, pandas, zipfile
 import logging
 from dotenv import load_dotenv
-
-# load_dotenv()
-# KAGGLE_USERNAME = os.getenv('KAGGLE_USERNAME')
-# KAGGLE_KEY = os.getenv('KAGGLE_KEY')
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-def get_dataset(from_kaggle = False, kaggle_username = "", kaggle_key = ""):
+path = Path(__file__).resolve().parent
+while path.name != "flower-classifier" and path != path.parent:
+    path = path.parent
+logger.info(f"Path to project parent directory: '{path}'")
+project_root = path
+
+
+def get_dataset(from_kaggle:bool = False, kaggle_username:str = "", kaggle_key:str = "", google_drive_url:str = ""):
     """
     Downloads zipped dataset from kaggle or mounted google drive
     """
 
+    download_path = project_root / 'data' / 'compressed'
+    
     if from_kaggle:
         logger.info(f"Retrieving dataset from kaggle...")
 
@@ -20,23 +26,39 @@ def get_dataset(from_kaggle = False, kaggle_username = "", kaggle_key = ""):
         KAGGLE_USERNAME = kaggle_username
         KAGGLE_KEY = kaggle_key
         #kaggle.api.authenticate()
-
+        
+        # kaggle import is not top-level since importing kaggle auto-runs the kaggle.api.authenticate command
+        # This is not needed if kaggle will not be used.
+        import kaggle
 
         # Download dataset zip
         dataset_id = 'jawadulkarim117/tomato-flower-3-class'
-        download_path = '/workspace/data/compressed'
-        kaggle.api.dataset_download_files(dataset_id, path=download_path)
+        logger.info(f"Downloading compressed dataset via Kaggle to '{str(download_path)}'")
+        
+        kaggle.api.dataset_download_files(dataset_id, path=str(download_path))
 
     else:
         # default to google drive download
         logger.info(f"Retrieving dataset from google drive...")
-        logger.warning(f"NOT YET SET UP")
-        pass
+        
+        import gdown
+
+        output_location = str(download_path / 'tomato-flower-3-class.zip')
+        logger.info(f"Downloading compressed dataset via Google Drive to '{output_location}'")
+        
+        gdown.download(google_drive_url, output_location, quiet=False)
 
 
+def unzip_dataset():
+    """
+    Extracts the contents of the zip file at the location downloaded to above.
+    By default, tracks 'tomato-flower/data/compressed/tomato-flower-3-class.zip' 
+    and extracts to 'tomato-flower/data/data_set'.
+    """
+    
     # Extract dataset zip
-    path_to_zip_file = download_path + '/tomato-flower-3-class.zip'
-    directory_to_extract_to = '/workspace/data/data_set'
+    path_to_zip_file = str(project_root / 'data' / 'compressed' / 'tomato-flower-3-class.zip')
+    directory_to_extract_to = str(project_root / 'data' / 'data_set')
     logger.info(f"Extracting files to directory: '{directory_to_extract_to}'")
 
 
