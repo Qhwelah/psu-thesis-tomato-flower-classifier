@@ -23,6 +23,9 @@ def get_dataset(from_kaggle:bool = False, kaggle_username:str = "", kaggle_key:s
     if Path(output_location).is_file():
         logger.info(f"zip file already exists at '{output_location}', skipping download.")
         return False
+
+    if not os.path.exists(download_path):
+        os.makedirs(download_path, exist_ok=True)
     
     if from_kaggle:
         logger.info(f"Retrieving dataset from kaggle...")
