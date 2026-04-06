@@ -18,6 +18,10 @@ flower-classifier/outputs/
 runs/
 *.log
 
+# Output binaries
+*.pt
+*tomato_flower_yolo26_*
+
 # Dataset binary from Kaggle
 data/
 
