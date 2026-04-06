@@ -144,5 +144,5 @@ def ingest(
 
     ## CREATE RUNS DIRECTORY
     ## If the directory where runout files will be stored does not yet exist, make it.
-    directory_path = project_root / 'flower-classifier/runs'
+    directory_path = project_root / 'runs'
     os.makedirs(str(directory_path), exist_ok=True)
