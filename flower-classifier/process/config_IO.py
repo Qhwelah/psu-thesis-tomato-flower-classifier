@@ -4,41 +4,47 @@ import logging
 
 logger = logging.getLogger(f"flower_classifier.{__name__}")
 
-DEFAULT_LOCATION = Path("/workspace/flower-classifier/config/YOLO26_config.json")
+path = Path(__file__).resolve().parent
+while path.name != "flower-classifier" and path != path.parent:
+    path = path.parent
+logger.info(f"Path to project parent directory: '{path}'")
+PROJECT_ROOT = path
+DEFAULT_LOCATION = PROJECT_ROOT / "config/YOLO26_config.json"
 
 
-def save_json_config(config: dict, path: str | Path = DEFAULT_LOCATION):
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
+def save_json_config(config: dict, file_path: str | Path = DEFAULT_LOCATION):
+    file_path = Path(file_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(file_path, "w") as f:
         json.dump(config, f, indent=2)
-    logger.info(f"DONE! Saved config to {path}")
+    logger.info(f"DONE! Saved config to {file_path}")
 
 
-def load_json_config(path: str | Path = DEFAULT_LOCATION) -> dict:
-    path = Path(path)
-    with open(path, "r") as f:
+def load_json_config(file_path: str | Path = DEFAULT_LOCATION) -> dict:
+    file_path = Path(file_path)
+    with open(file_path, "r") as f:
         config = json.load(f)
-    logger.info(f"DONE! Loaded config from {path}")
+    logger.info(f"DONE! Loaded config from {file_path}")
+    logger.info(f"Loaded config set: \n{json.dumps(config, indent=4)}")
     return config
 
 
-def make_YOLO26_config(file_path = '/workspace/flower-classifier/config/YOLO26_config.json'):
+def make_YOLO26_config(file_path: str | Path = DEFAULT_LOCATION):
     """
     Creates a config file at the specified file path with all the YOLO26 config fields with default values.
     """
 
     TRAIN_CONFIG = {
         "model_cfg": "yolo26n.yaml",
-        "data_yaml": "/workspace/flower-classifier/config/data.yaml",
-        "project_dir": "/workspace/flower-classifier/runs",
-        "run_name": "tomato_flower_yolo26_from_scratch",
+        "data_yaml": str(PROJECT_ROOT / "config/data.yaml"),
+        "project_dir": str(PROJECT_ROOT / "runs"),
+        "run_name": str(PROJECT_ROOT / "tomato_flower_yolo26_from_scratch"),
         "train_params": {
             "epochs": 100,
             "imgsz": 640,
-            "batch": 16,
-            "device": "cpu",
-            "workers": 4,
+            "batch": -1,
+            "device": -1,
+            "workers": 8,
             "patience": 30,
             "optimizer": "auto",
             "lr0": 0.01,
@@ -54,7 +60,7 @@ def make_YOLO26_config(file_path = '/workspace/flower-classifier/config/YOLO26_c
             "close_mosaic": 10,
             "single_cls": False,
             "cos_lr": False,
-            "amp": False,
+            "amp": True,
             "plots": True,
             "save": True,
             "save_period": -1,
@@ -64,7 +70,10 @@ def make_YOLO26_config(file_path = '/workspace/flower-classifier/config/YOLO26_c
         }
     }
 
+    logger.info(f"Creating default config set at location '{file_path}'")
     try:
+        file_path = Path(file_path)
+        logger.info(f"Default config set: \n{json.dumps(TRAIN_CONFIG, indent=4)}")
         with open(file_path, 'w') as json_file:
             json.dump(TRAIN_CONFIG, json_file, indent=4)
         logger.info(f"Data successfully saved to {file_path}")
