@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 import logging
+import re
 
 logger = logging.getLogger(f"flower_classifier.{__name__}")
 
@@ -38,7 +39,7 @@ def make_YOLO26_config(file_path: str | Path = DEFAULT_LOCATION):
         "model_cfg": "yolo26n.yaml",
         "data_yaml": str(PROJECT_ROOT / "config/data.yaml"),
         "project_dir": str(PROJECT_ROOT / "runs"),
-        "run_name": str(PROJECT_ROOT / "tomato_flower_yolo26_from_scratch"),
+        "run_name": "exp_",
         "train_params": {
             "epochs": 100,
             "imgsz": 640,
@@ -79,3 +80,25 @@ def make_YOLO26_config(file_path: str | Path = DEFAULT_LOCATION):
         logger.info(f"Data successfully saved to {file_path}")
     except IOError as e:
         logger.info(f"Error saving file: {e}")
+
+
+def get_highest_numbered_run(parent_path):
+    """
+    Helper function which gets the highest-number folder in the runs subdirectory and returns it.
+    """
+    path = Path(parent_path)
+    
+    # Get all subdirectories in the location
+    subdirs = [d for d in path.iterdir() if d.is_dir()]
+    
+    # Helper to extract the number from the end of the name
+    def extract_suffix_number(folder):
+        # Finds one or more digits (\d+) at the end ($) of the folder name
+        match = re.search(r'(\d+)$', folder.name)
+        return int(match.group(1)) if match else -1
+
+    # Find the folder with the maximum numeric suffix
+    if not subdirs:
+        return 0
+        
+    return max(subdirs, key=extract_suffix_number)
