@@ -95,10 +95,10 @@ def get_highest_numbered_run(parent_path):
     def extract_suffix_number(folder):
         # Finds one or more digits (\d+) at the end ($) of the folder name
         match = re.search(r'(\d+)$', folder.name)
-        return int(match.group(1)) if match else -1
+        return int(match.group(1)) if match else 0
 
     # Find the folder with the maximum numeric suffix
     if not subdirs:
         return 0
         
-    return max(subdirs, key=extract_suffix_number)
+    return extract_suffix_number(max(subdirs, key=extract_suffix_number))
