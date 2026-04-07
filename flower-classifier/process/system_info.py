@@ -36,4 +36,5 @@ def verify_venv() -> bool:
         return True
 
     logger.warning("Jupyter is NOT running in venv!")
+    raise Exception(f"WARNING! Must run in virtual environment for packages to run correctly. Check README.md for more information.")
     return False

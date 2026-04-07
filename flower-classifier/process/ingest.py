@@ -18,7 +18,7 @@ logger = logging.getLogger(f"flower_classifier.{__name__}")
 # VAL_RATIO = 0.5
 # RANDOM_SEED = 42
 
-def ingest(
+def run_ingestion(
         dataset_root="", 
         source_dir="", 
         val_ratio=0.5, 

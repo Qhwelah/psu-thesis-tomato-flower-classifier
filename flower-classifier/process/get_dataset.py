@@ -12,7 +12,7 @@ logger.info(f"Path to project parent directory: '{path}'")
 project_root = path
 
 
-def get_dataset(from_kaggle:bool = False, kaggle_username:str = "", kaggle_key:str = "", google_zip_id:str = "") -> bool:
+def download_dataset(from_kaggle:bool = False, kaggle_username:str = "", kaggle_key:str = "", google_zip_id:str = "") -> bool:
     """
     Downloads zipped dataset from kaggle or mounted google drive
     """
