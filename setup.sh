@@ -1,19 +1,13 @@
 #!/usr/bin/env bash
 set -e
 
-echo "Creating virtual environment..."
-uv venv
-
-echo "Activating environment..."
-source .venv/bin/activate
-
-echo "Installing project..."
-uv pip install -e .
+echo "Syncing dependencies..."
+uv sync
+echo "Dependencies synced!"
 
 echo "Registering Jupyter kernel..."
-python -m ipykernel install --user \
+uv run python -m ipykernel install --user \
   --name flower-project \
   --display-name "Python (flower-project)"
 
 echo "Setup complete!"
-echo "Now select 'Python (flower-project)' in Jupyter"
