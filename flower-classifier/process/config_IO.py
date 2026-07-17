@@ -65,7 +65,7 @@ def make_YOLO26_config(file_path: str | Path = DEFAULT_LOCATION):
             "plots": True,
             "save": True,
             "save_period": -1,
-            "exist_ok": True,
+            "exist_ok": False,
             "pretrained": False,
             "verbose": True
         }
