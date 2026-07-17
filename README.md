@@ -14,7 +14,7 @@ KAGGLE_KEY=
 	- if you do not already have `uv` installed:
 	- run `curl -LsSf https://astral.sh/uv/install.sh | sh` to install it.
 
-2. run `bash ./setup.sh`
+<!-- 2. run `bash ./setup.sh`
 	- this sets up the python virtual environment and configures it for use in jupyter.
 	- your terminal session should now be in that virtual environment.
 
@@ -27,7 +27,23 @@ KAGGLE_KEY=
 	- this page will not load
 	- but in the terminal where you ran the jupyter lab command, it will print out a URL with an access token included
 	- save this link for as long as you want to access that jupyter lab session
-	- click that link to access the jupyter lab program.
+	- click that link to access the jupyter lab program. -->
+
+2. Run `bash ./setup.sh`
+	- it sets up the python virtual environment
+	- also configures venv for use with jupyter
+
+3. Run `start_jupyter.sh`
+	- creates logs directory (if doesn't already exist)
+	- runs jupyter lab as a detached process via `nohup`
+	- logs jupyter output to `logs/jupyter.log`
+		- This is where your access tokens will be printed to for step 4
+		- You can follow the log output using `tail -f logs/jupyter.log`
+
+4. Open `jupyter lab` via the URL in jupyter's logs
+	- open the `logs/jupyter.log` file 
+	- ctrl+click the weblink to open jupyter lab in your browser
+	- may take a moment for jupyter to finish being set up
 
 5. Once in your jupyter notebook:
 	- at the bottom of the page, click `Python`
@@ -37,14 +53,18 @@ KAGGLE_KEY=
 6. Then, run the cells in the jupyter notebook as usual.
 
 ## Project management
-- to kill the process:
+- stop jupyter with:
+	- `kill $(pgrep -f "jupyter lab")`
+	- or just run `bash stop_jupyer.sh` which does the same thing
+
+<!-- - to kill the process:
 	- run `pgrep jupyter` or `ps -A | grep jupyter`
 	- find Jupyter's PID number
 	- run `kill 1234` where 1234 is the PID number you found to stop the program.
 
 - venv use
 	- To enter an already running venv, use `source venv/bin/activate`
-	- To exit from a venv, use `deactivate`
+	- To exit from a venv, use `deactivate` -->
 
 ## Running the ML
 - To run the ML process, first create the `.env` file and follow the `setup` instructions above.
