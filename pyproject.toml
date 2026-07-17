@@ -51,3 +51,8 @@ py-modules = [
     "system_info",
     "view_file"
 ]
+
+[dependency-groups]
+dev = [
+    "nbstripout>=0.9.1",
+]
