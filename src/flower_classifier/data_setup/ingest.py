@@ -7,6 +7,7 @@ import random
 import yaml
 import os
 import logging
+from flower_classifier.config_IO import PROJECT_ROOT
 
 logger = logging.getLogger(f"flower_classifier.{__name__}")
 
@@ -27,15 +28,15 @@ def run_ingestion(
     Extracts the zipped dataset and prepares the project directory.
     """
 
-    path = Path(__file__).resolve().parent
-    while path.name != "flower-classifier" and path != path.parent:
-        path = path.parent
-    project_root = path
+    # path = Path(__file__).resolve().parent
+    # while path.name != "flower-classifier" and path != path.parent:
+    #     path = path.parent
+    # PROJECT_ROOT = path
         
     if len(dataset_root) < 1:
-        dataset_root = project_root / 'data' / 'data_set' / 'tomato-flower'
+        dataset_root = PROJECT_ROOT / 'data' / 'data_set' / 'tomato-flower'
     if len(source_dir) < 1:
-        source_dir = project_root / 'data' /'data_set' / 'tomato-flower' / 'valid'
+        source_dir = PROJECT_ROOT / 'data' /'data_set' / 'tomato-flower' / 'valid'
     
     # ==========================
     # PATHS
@@ -123,13 +124,13 @@ def run_ingestion(
 
     ## DATA YAML UPDATER
     ## CREATES THE NEW DATA CONFIG FILE FOR THE NEW FOLDERS
-    data_yaml_path = project_root / 'config' / 'data.yaml'
+    data_yaml_path = PROJECT_ROOT / 'config' / 'data.yaml'
     data_yaml_path.parent.mkdir(parents=True, exist_ok=True)
 
     data_config = {
-        "train": str(project_root / 'data/data_set/tomato-flower/train/images'),
-        "val": str(project_root / "data/data_set/tomato-flower/val/images"),
-        "test": str(project_root / "data/data_set/tomato-flower/test/images"),
+        "train": str(PROJECT_ROOT / 'data/data_set/tomato-flower/train/images'),
+        "val": str(PROJECT_ROOT / "data/data_set/tomato-flower/val/images"),
+        "test": str(PROJECT_ROOT / "data/data_set/tomato-flower/test/images"),
         "nc": 3,
         "names": ["Bud", "Anthesis", "Post-Anthesis"],
     }
@@ -144,5 +145,5 @@ def run_ingestion(
 
     ## CREATE RUNS DIRECTORY
     ## If the directory where runout files will be stored does not yet exist, make it.
-    directory_path = project_root / 'runs'
+    directory_path = PROJECT_ROOT / 'runs'
     os.makedirs(str(directory_path), exist_ok=True)
