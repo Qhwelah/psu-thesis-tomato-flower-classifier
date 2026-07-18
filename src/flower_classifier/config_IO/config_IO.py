@@ -8,6 +8,8 @@ logger = logging.getLogger(f"flower_classifier.{__name__}")
 path = Path(__file__).resolve().parent
 while path.name != "src" and path != path.parent:
     path = path.parent
+if path.name == "src":
+    path = path.parent
 logger.info(f"Path to project parent directory: '{path}'")
 PROJECT_ROOT = path
 DEFAULT_LOCATION = PROJECT_ROOT / "config/YOLO26_config.json"
