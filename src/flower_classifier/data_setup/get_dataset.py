@@ -2,14 +2,15 @@ import os, pandas, zipfile
 import logging
 from dotenv import load_dotenv
 from pathlib import Path
+from flower_classifier.config_IO import PROJECT_ROOT
 
 logger = logging.getLogger(f"flower_classifier.{__name__}")
 
-path = Path(__file__).resolve().parent
-while path.name != "src" and path != path.parent:
-    path = path.parent
-logger.info(f"Path to project parent directory: '{path}'")
-PROJECT_ROOT = path
+# path = Path(__file__).resolve().parent
+# while path.name != "src" and path != path.parent:
+#     path = path.parent
+# logger.info(f"Path to project parent directory: '{path}'")
+# PROJECT_ROOT = path
 
 
 def download_dataset(from_kaggle:bool = False, kaggle_username:str = "", kaggle_key:str = "", google_zip_id:str = "") -> bool:
