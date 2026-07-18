@@ -3,6 +3,7 @@ set -e
 
 echo "Syncing dependencies..."
 uv sync
+uv run nbstripout --install
 echo "Dependencies synced!"
 
 echo "Registering Jupyter kernel..."
