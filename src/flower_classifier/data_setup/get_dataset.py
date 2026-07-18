@@ -6,10 +6,10 @@ from pathlib import Path
 logger = logging.getLogger(f"flower_classifier.{__name__}")
 
 path = Path(__file__).resolve().parent
-while path.name != "flower-classifier" and path != path.parent:
+while path.name != "src" and path != path.parent:
     path = path.parent
 logger.info(f"Path to project parent directory: '{path}'")
-project_root = path
+PROJECT_ROOT = path
 
 
 def download_dataset(from_kaggle:bool = False, kaggle_username:str = "", kaggle_key:str = "", google_zip_id:str = "") -> bool:
@@ -17,7 +17,7 @@ def download_dataset(from_kaggle:bool = False, kaggle_username:str = "", kaggle_
     Downloads zipped dataset from kaggle or mounted google drive
     """
 
-    download_path = project_root / 'data' / 'compressed'
+    download_path = PROJECT_ROOT / 'data' / 'compressed'
     output_location = str(download_path / 'tomato-flower-3-class.zip')
 
     if Path(output_location).is_file():
@@ -68,8 +68,8 @@ def unzip_dataset():
     """
     
     # Extract dataset zip
-    path_to_zip_file = str(project_root / 'data' / 'compressed' / 'tomato-flower-3-class.zip')
-    directory_to_extract_to = str(project_root / 'data' / 'data_set')
+    path_to_zip_file = str(PROJECT_ROOT / 'data' / 'compressed' / 'tomato-flower-3-class.zip')
+    directory_to_extract_to = str(PROJECT_ROOT / 'data' / 'data_set')
     logger.info(f"Extracting files to directory: '{directory_to_extract_to}'")
 
 
