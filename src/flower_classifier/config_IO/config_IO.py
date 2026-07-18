@@ -6,7 +6,7 @@ import re
 logger = logging.getLogger(f"flower_classifier.{__name__}")
 
 path = Path(__file__).resolve().parent
-while path.name != "flower-classifier" and path != path.parent:
+while path.name != "src" and path != path.parent:
     path = path.parent
 logger.info(f"Path to project parent directory: '{path}'")
 PROJECT_ROOT = path

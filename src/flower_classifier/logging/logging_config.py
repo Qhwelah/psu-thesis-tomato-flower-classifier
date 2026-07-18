@@ -3,7 +3,14 @@ import os, sys
 from pathlib import Path
 from ultralytics.utils import LOGGER as YOLO_LOGGER
 
-LOG_FILE_ROOT = Path(__file__).resolve().parent
+path = Path(__file__).resolve().parent
+while path.name != "src" and path != path.parent:
+    path = path.parent
+# logger.info(f"Path to project parent directory: '{path}'")
+PROJECT_ROOT = path
+LOG_FILE_ROOT = PROJECT_ROOT / "logs"
+
+# LOG_FILE_ROOT = Path(__file__).resolve().parent
 BASE_LOGGER_NAME = "flower_classifier"
 
 def setup_logging(log_file: str|None = None) -> logging.Logger:
