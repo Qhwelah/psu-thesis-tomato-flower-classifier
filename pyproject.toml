@@ -1,6 +1,6 @@
 [project]
 name = "flower-classifier"
-version = "0.1.0"
+version = "0.2.0"
 description = "YOLO-based flower classification with XAI"
 authors = [{ name = "qhwelah" }]
 requires-python = ">=3.10"
@@ -40,7 +40,7 @@ dependencies = [
 ]
 
 [build-system]
-requires = ["uv_build"]
+requires = ["uv_build<0.12"]
 build-backend = "uv_build"
 
 [tool.setuptools]
