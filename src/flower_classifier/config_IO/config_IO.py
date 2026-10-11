@@ -15,6 +15,9 @@ PROJECT_ROOT = path
 DEFAULT_LOCATION = PROJECT_ROOT / "config/YOLO26_config.json"
 
 
+def format_config_string(config: dict) -> str:
+    return json.dumps(config, indent=4)
+
 def save_json_config(config: dict, file_path: str | Path = DEFAULT_LOCATION):
     file_path = Path(file_path)
     file_path.parent.mkdir(parents=True, exist_ok=True)
