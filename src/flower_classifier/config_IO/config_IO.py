@@ -35,46 +35,26 @@ def load_json_config(file_path: str | Path = DEFAULT_LOCATION) -> dict:
     return config
 
 
-def make_YOLO26_config(file_path: str | Path = DEFAULT_LOCATION):
+def make_YOLO_config(
+        using_model: str,
+        file_path: str | Path = DEFAULT_LOCATION,
+    ):
     """
     Creates a config file at the specified file path with all the YOLO26 config fields with default values.
     """
 
     TRAIN_CONFIG = {
-        "model_cfg": "yolo26n.yaml",
+        "model_cfg": f"{using_model}.yaml",
         "data_yaml": str(PROJECT_ROOT / "config/data.yaml"),
         "project_dir": str(PROJECT_ROOT / "runs"),
-        "run_name": "exp_",
+        "run_name": "exp_", # CHANGE ME
         "train_params": {
-            "epochs": 100,
-            "imgsz": 640,
             "batch": -1,
             "device": -1,
-            "workers": 8,
-            "patience": 30,
-            "optimizer": "auto",
-            "lr0": 0.01,
-            "lrf": 0.01,
-            "momentum": 0.937,
-            "weight_decay": 0.0005,
-            "warmup_epochs": 3.0,
-            "warmup_momentum": 0.8,
-            "warmup_bias_lr": 0.1,
-            "box": 7.5,
-            "cls": 0.5,
-            "dfl": 1.5,
-            "close_mosaic": 10,
-            "single_cls": False,
-            "cos_lr": False,
-            "amp": True,
-            "plots": True,
-            "save": True,
-            "save_period": -1,
-            "exist_ok": False,
             "pretrained": False,
-            "verbose": True
         }
     }
+
 
     logger.info(f"Creating default config set at location '{file_path}'")
     try:
