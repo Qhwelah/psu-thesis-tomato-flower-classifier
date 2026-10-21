@@ -35,16 +35,20 @@ def load_json_config(file_path: str | Path = DEFAULT_LOCATION) -> dict:
     return config
 
 
-def make_YOLO_config(
-        using_model: str,
-        file_path: str | Path = DEFAULT_LOCATION,
-    ):
+def make_YOLO_config(file_path: str | Path = DEFAULT_LOCATION):
     """
-    Creates a config file at the specified file path with all the YOLO26 config fields with default values.
+    Creates a config file at the specified file path with only the YOLO config fields with values changed from default.
+
+    All train_params that are NOT included in this object will take the default YOLO values.
+
+    `model_cfg` and `run_name`, for example, will be assigned directly prior to training when a specific YOLO model and version is selected.
+
+    Note, this does NOT include the manually-adjusted values later in the `flower_classifier.ipynb` file,
+    only the settings that are changed by default for the most consistency across models/versions.
     """
 
     TRAIN_CONFIG = {
-        "model_cfg": f"{using_model}.yaml",
+        # "model_cfg": f"{using_model}.yaml",
         "data_yaml": str(PROJECT_ROOT / "config/data.yaml"),
         "project_dir": str(PROJECT_ROOT / "runs"),
         "train_params": {
