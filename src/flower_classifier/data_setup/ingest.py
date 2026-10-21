@@ -11,31 +11,25 @@ from flower_classifier.config_IO import PROJECT_ROOT
 
 logger = logging.getLogger(f"flower_classifier.{__name__}")
 
-# # ==========================
-# # CONFIG
-# # ==========================
-# DATASET_ROOT = Path("/workspace/data/data_set/tomato-flower")
-# SOURCE_DIR = DATASET_ROOT / "valid"
-# VAL_RATIO = 0.5
-# RANDOM_SEED = 42
 
-def run_ingestion(
-        dataset_root="", 
-        source_dir="", 
-        val_ratio=0.5, 
-        random_seed=42):
+def make_val_and_test_sets(
+        val_ratio: float = 0.5, 
+        random_seed: int = 42
+    ):
     """
-    Extracts the zipped dataset and prepares the project directory.
+    Splits the existing `valid` set images and labels folder into two new `val` and `test` sets
+    via the specified split ratio `val_ratio`. The original `train` folder is left untouched.
+
+    The idea is to go from an existing train/validation split of 80/20 into a new train/validation/test split of 80/10/10
+    with disjunct sets for full isolation of each operation's image sets.
     """
 
-    # path = Path(__file__).resolve().parent
-    # while path.name != "flower-classifier" and path != path.parent:
-    #     path = path.parent
-    # PROJECT_ROOT = path
-        
-    if len(dataset_root) < 1:
+    # DATASET_ROOT = Path("<path/to/workspace>/data/data_set/tomato-flower")
+    # SOURCE_DIR = DATASET_ROOT / "valid"
+
+    if len(str(dataset_root)) < 1:
         dataset_root = PROJECT_ROOT / 'data' / 'data_set' / 'tomato-flower'
-    if len(source_dir) < 1:
+    if len(str(source_dir)) < 1:
         source_dir = PROJECT_ROOT / 'data' /'data_set' / 'tomato-flower' / 'valid'
     
     # ==========================
