@@ -48,7 +48,6 @@ def make_YOLO_config(file_path: str | Path = DEFAULT_LOCATION):
     """
 
     TRAIN_CONFIG = {
-        # "model_cfg": f"{using_model}.yaml",
         "data_yaml": str(PROJECT_ROOT / "config/data.yaml"),
         "project_dir": str(PROJECT_ROOT / "runs"),
         "train_params": {
