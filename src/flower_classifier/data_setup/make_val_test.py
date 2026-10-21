@@ -26,10 +26,8 @@ def make_val_and_test_sets(
     # DATASET_ROOT = Path("<path/to/workspace>/data/data_set/tomato-flower")
     # SOURCE_DIR = DATASET_ROOT / "valid"
 
-    if len(str(dataset_root)) < 1:
-        dataset_root = PROJECT_ROOT / 'data' / 'data_set' / 'tomato-flower'
-    if len(str(source_dir)) < 1:
-        source_dir = PROJECT_ROOT / 'data' /'data_set' / 'tomato-flower' / 'valid'
+    dataset_root = PROJECT_ROOT / 'data' / 'data_set' / 'tomato-flower'
+    source_dir = dataset_root / 'valid'
     
     # ==========================
     # PATHS
