@@ -47,7 +47,6 @@ def make_YOLO_config(
         "model_cfg": f"{using_model}.yaml",
         "data_yaml": str(PROJECT_ROOT / "config/data.yaml"),
         "project_dir": str(PROJECT_ROOT / "runs"),
-        "run_name": "exp_", # CHANGE ME
         "train_params": {
             "batch": -1,
             "device": -1,
@@ -67,23 +66,23 @@ def make_YOLO_config(
         logger.info(f"Error saving file: {e}")
 
 
-def get_highest_numbered_run(parent_path):
+def get_highest_numbered_run(
+        parent_path: str|Path,
+        model_name: str
+    ) -> int:
     """
-    Helper function which gets the highest-number folder in the runs subdirectory and returns it.
+    Helper function which gets the highest-number folder for this model in the runs subdirectory and returns it.
     """
     path = Path(parent_path)
     
     # Get all subdirectories in the location
     subdirs = [d for d in path.iterdir() if d.is_dir()]
-    
-    # Helper to extract the number from the end of the name
-    def extract_suffix_number(folder):
-        # Finds one or more digits (\d+) at the end ($) of the folder name
-        match = re.search(r'(\d+)$', folder.name)
-        return int(match.group(1)) if match else 0
 
-    # Find the folder with the maximum numeric suffix
-    if not subdirs:
-        return 0
-        
-    return extract_suffix_number(max(subdirs, key=extract_suffix_number))
+    # Find the folder matching this model with the maximum numeric suffix
+    this_model_run_nums: list[int] = [0]
+    for subdir in subdirs:
+        match = re.search(rf'{model_name}_(\d+)$', subdir.name)
+        run_num = int(match.group(1)) if match else 0
+        this_model_run_nums.append(run_num)
+
+    return max(this_model_run_nums)
