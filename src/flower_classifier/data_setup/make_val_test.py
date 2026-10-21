@@ -1,4 +1,3 @@
-## INGESTION
 ## SPLIT VALID INTO VAL AND TEST
 
 from pathlib import Path
