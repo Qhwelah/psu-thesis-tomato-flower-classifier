@@ -35,46 +35,28 @@ def load_json_config(file_path: str | Path = DEFAULT_LOCATION) -> dict:
     return config
 
 
-def make_YOLO26_config(file_path: str | Path = DEFAULT_LOCATION):
+def make_YOLO_config(file_path: str | Path = DEFAULT_LOCATION):
     """
-    Creates a config file at the specified file path with all the YOLO26 config fields with default values.
+    Creates a config file at the specified file path with only the YOLO config fields with values changed from default.
+
+    All train_params that are NOT included in this object will take the default YOLO values.
+
+    `model_cfg` and `run_name`, for example, will be assigned directly prior to training when a specific YOLO model and version is selected.
+
+    Note, this does NOT include the manually-adjusted values later in the `flower_classifier.ipynb` file,
+    only the settings that are changed by default for the most consistency across models/versions.
     """
 
     TRAIN_CONFIG = {
-        "model_cfg": "yolo26n.yaml",
         "data_yaml": str(PROJECT_ROOT / "config/data.yaml"),
         "project_dir": str(PROJECT_ROOT / "runs"),
-        "run_name": "exp_",
         "train_params": {
-            "epochs": 100,
-            "imgsz": 640,
             "batch": -1,
             "device": -1,
-            "workers": 8,
-            "patience": 30,
-            "optimizer": "auto",
-            "lr0": 0.01,
-            "lrf": 0.01,
-            "momentum": 0.937,
-            "weight_decay": 0.0005,
-            "warmup_epochs": 3.0,
-            "warmup_momentum": 0.8,
-            "warmup_bias_lr": 0.1,
-            "box": 7.5,
-            "cls": 0.5,
-            "dfl": 1.5,
-            "close_mosaic": 10,
-            "single_cls": False,
-            "cos_lr": False,
-            "amp": True,
-            "plots": True,
-            "save": True,
-            "save_period": -1,
-            "exist_ok": False,
             "pretrained": False,
-            "verbose": True
         }
     }
+
 
     logger.info(f"Creating default config set at location '{file_path}'")
     try:
@@ -87,23 +69,23 @@ def make_YOLO26_config(file_path: str | Path = DEFAULT_LOCATION):
         logger.info(f"Error saving file: {e}")
 
 
-def get_highest_numbered_run(parent_path):
+def get_highest_numbered_run(
+        parent_path: str|Path,
+        model_name: str
+    ) -> int:
     """
-    Helper function which gets the highest-number folder in the runs subdirectory and returns it.
+    Helper function which gets the highest-number folder for this model in the runs subdirectory and returns it.
     """
     path = Path(parent_path)
     
     # Get all subdirectories in the location
     subdirs = [d for d in path.iterdir() if d.is_dir()]
-    
-    # Helper to extract the number from the end of the name
-    def extract_suffix_number(folder):
-        # Finds one or more digits (\d+) at the end ($) of the folder name
-        match = re.search(r'(\d+)$', folder.name)
-        return int(match.group(1)) if match else 0
 
-    # Find the folder with the maximum numeric suffix
-    if not subdirs:
-        return 0
-        
-    return extract_suffix_number(max(subdirs, key=extract_suffix_number))
+    # Find the folder matching this model with the maximum numeric suffix
+    this_model_run_nums: list[int] = [0]
+    for subdir in subdirs:
+        match = re.search(rf'{model_name}_(\d+)$', subdir.name)
+        run_num = int(match.group(1)) if match else 0
+        this_model_run_nums.append(run_num)
+
+    return max(this_model_run_nums)
