@@ -32,6 +32,9 @@ config/
 # Virtual environment
 .venv/
 
+# IDE tools
+.vscode
+
 # Personal notes or removed code
 notes/
 .disabled
