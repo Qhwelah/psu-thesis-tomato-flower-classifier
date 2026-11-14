@@ -11,6 +11,17 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 
+def _json_default(value):
+    """Convert NumPy report values while preserving JSON numeric types."""
+    import numpy as np
+
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, np.generic):
+        return value.item()
+    raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
+
+
 def _copy_evaluation_logs(report_dir: Path) -> None:
     """Snapshot active log files after the current checkpoint has been logged."""
     current = logger
@@ -102,8 +113,8 @@ def evaluate_best_checkpoints(
                 "settings": settings, "metrics": aggregate,
                 "per_class": metrics.summary(), "speed_ms_per_image": speed,
             }
-            with (report_dir / "metrics.json").open("w") as handle:
-                json.dump(report, handle, indent=2)
+            serialized_report = json.dumps(report, indent=2, default=_json_default)
+            (report_dir / "metrics.json").write_text(serialized_report)
             row.update(status="ok", results_dir=str(report_dir), **aggregate)
             row.update({f"speed_{key}_ms": value for key, value in speed.items()})
         except Exception as exc:
