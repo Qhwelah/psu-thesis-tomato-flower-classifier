@@ -1,7 +1,31 @@
 """Compare repeated training trials using an existing evaluation summary."""
 
 import warnings
+from datetime import datetime
 from pathlib import Path
+
+
+def get_latest_summary_csv(results_dir: str | Path) -> Path:
+    """Return summary.csv from the newest timestamped evaluation directory.
+
+    Uses directory timestamps rather than file modification times. Ignores
+    unrelated folders and timestamped folders that have no summary.csv yet.
+    """
+    results_dir = Path(results_dir).expanduser().resolve()
+    candidates = []
+    for folder in results_dir.iterdir():
+        if not folder.is_dir():
+            continue
+        try:
+            timestamp = datetime.strptime(folder.name, "%Y%m%d_%H%M%S_%f")
+        except ValueError:
+            continue
+        summary = folder / "summary.csv"
+        if summary.is_file():
+            candidates.append((timestamp, summary))
+    if not candidates:
+        raise FileNotFoundError(f"No timestamped evaluation summaries found in {results_dir}")
+    return max(candidates)[1]
 
 
 def compare_model_results(
