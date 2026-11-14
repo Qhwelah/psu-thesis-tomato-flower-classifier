@@ -4,10 +4,27 @@ import csv
 import gc
 import json
 import logging
+import shutil
 from datetime import datetime
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+
+def _copy_evaluation_logs(report_dir: Path) -> None:
+    """Snapshot active log files after the current checkpoint has been logged."""
+    current = logger
+    copied = set()
+    while current is not None:
+        for handler in current.handlers:
+            if isinstance(handler, logging.FileHandler):
+                handler.flush()
+                source = Path(handler.baseFilename)
+                if source not in copied:
+                    report_dir.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(source, report_dir / source.name)
+                    copied.add(source)
+        current = current.parent if current.propagate else None
 
 
 def evaluate_best_checkpoints(
@@ -23,7 +40,8 @@ def evaluate_best_checkpoints(
 
     Outputs: summary.csv (including failures/missing checkpoints), per-run
     metrics.json (aggregate and per-class metrics, speed, evaluation settings),
-    and Ultralytics plots. Returns the summary rows. Interrupts propagate;
+    Ultralytics plots, and a snapshot of the active log in each run folder.
+    Results live in test_results/ beside runs_dir. Returns the summary rows. Interrupts propagate;
     ordinary model failures are recorded and evaluation continues.
     """
     import torch
@@ -45,7 +63,7 @@ def evaluate_best_checkpoints(
     runs = sorted(p for p in runs_dir.iterdir() if p.is_dir() and p.name.startswith("exp_"))
     if not runs:
         raise FileNotFoundError(f"No exp_* directories found in {runs_dir}")
-    output_dir = runs_dir / "test_results" / datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    output_dir = runs_dir.parent / "test_results" / datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     output_dir.mkdir(parents=True, exist_ok=False)
     print(f"Evaluating {len(runs)} runs. Results: {output_dir}", flush=True)
     rows = []
@@ -61,6 +79,7 @@ def evaluate_best_checkpoints(
         checkpoint = run / "weights" / "best.pt"
         row = {"run": run.name, "checkpoint": str(checkpoint), "status": "", "error": ""}
         model = metrics = None
+        report_dir = output_dir / run.name
         print(f"[{index}/{len(runs)}] {run.name}", flush=True)
         try:
             if not checkpoint.is_file():
@@ -93,6 +112,11 @@ def evaluate_best_checkpoints(
         finally:
             rows.append(row)
             save_summary()  # Preserve progress after every checkpoint.
+            logger.info("Test evaluation %s: %s", run.name, row["status"])
+            try:
+                _copy_evaluation_logs(report_dir)
+            except OSError:
+                logger.exception("Could not copy evaluation logs to %s", report_dir)
             model = metrics = None
             gc.collect()
             if torch.cuda.is_available():

@@ -16,6 +16,7 @@ data/processed/
 data/downloads/
 flower-classifier/outputs/
 runs/
+test_results/
 *.log
 
 # Output binaries
