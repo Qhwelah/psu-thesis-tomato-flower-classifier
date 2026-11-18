@@ -57,6 +57,7 @@ def compare_model_results(
     *,
     graph_statistic: str = "mean",
     graph_metric: str = "metrics/mAP50-95(B)",
+    additional_graph_metrics: Sequence[str] = (),
     expected_trials: int = 3,
     csv_aggregations: Sequence[str] = ("count", "mean", "median", "std", "min", "max"),
 ):
@@ -68,6 +69,7 @@ def compare_model_results(
     The graph shows graph_statistic for graph_metric and each individual
     trial, with bars grouped by YOLO version and colored by scale. Incomplete
     groups are included with a warning and their actual count.
+    Additional graph metrics use the same layout and statistic.
 
     Returns (statistics_dataframe, figure). Outputs sit beside summary.csv.
     """
@@ -86,7 +88,8 @@ def compare_model_results(
         )
     summary_csv = Path(summary_csv).expanduser().resolve()
     trials = pd.read_csv(summary_csv)
-    required = {"run", "status", graph_metric}
+    graph_metrics = dict.fromkeys([graph_metric, *additional_graph_metrics])
+    required = {"run", "status", *graph_metrics}
     if not required.issubset(trials.columns):
         raise ValueError(f"Missing required columns: {sorted(required - set(trials.columns))}")
     names = trials["run"].str.extract(r"^exp_(?P<model>.+)_(?P<trial>\d+)$")
@@ -139,42 +142,48 @@ def compare_model_results(
         )
     stats.to_csv(summary_csv.parent / "model_statistics.csv")
 
-    if graph_statistic in csv_aggregations:
-        values = stats[f"{graph_metric}__{graph_statistic}"]
-    else:
-        values = grouped[graph_metric].agg(graph_statistic).reindex(models)
-    width = 0.8 / len(scales)
-    fig, ax = plt.subplots(figsize=(max(8, len(models) * 0.65), 5), layout="constrained")
-    bar_centers = {}
-    for scale_index, scale in enumerate(scales):
-        scale_models = [model for model in models if model_groups[model][1] == scale]
-        offset = (scale_index - (len(scales) - 1) / 2) * width
-        positions = [versions.index(model_groups[model][0]) + offset for model in scale_models]
-        bar_centers.update(zip(scale_models, positions))
-        ax.bar(positions, values.loc[scale_models], width=width, color=scale_colors[scale],
-               label=f"Scale {scale}" if scale else "Unspecified scale")
+    for plot_metric in graph_metrics:
+        if graph_statistic in csv_aggregations:
+            values = stats[f"{plot_metric}__{graph_statistic}"]
+        else:
+            values = grouped[plot_metric].agg(graph_statistic).reindex(models)
+        width = 0.8 / len(scales)
+        fig, ax = plt.subplots(figsize=(max(8, len(models) * 0.65), 5), layout="constrained")
+        bar_centers = {}
+        for scale_index, scale in enumerate(scales):
+            scale_models = [model for model in models if model_groups[model][1] == scale]
+            offset = (scale_index - (len(scales) - 1) / 2) * width
+            positions = [versions.index(model_groups[model][0]) + offset for model in scale_models]
+            bar_centers.update(zip(scale_models, positions))
+            ax.bar(positions, values.loc[scale_models], width=width, color=scale_colors[scale],
+                   label=f"Scale {scale}" if scale else "Unspecified scale")
 
-    trial_label = "Individual trials"
-    for model in models:
-        center = bar_centers[model]
-        points = successful.loc[successful["model"] == model, graph_metric].to_numpy()
-        if len(points):
-            offsets = [0] if len(points) == 1 else [
-                0.6 * width * (i / (len(points) - 1) - 0.5) for i in range(len(points))
-            ]
-            ax.scatter([center + offset for offset in offsets], points, color="black", s=24,
-                       zorder=3, label=trial_label)
-            trial_label = None
-        if model in incomplete:
-            ax.annotate(f"n={len(points)}", (center, 0), xytext=(0, 4),
-                        textcoords="offset points", ha="center", fontsize=8)
-    ax.set_xticks(range(len(versions)), versions)
-    metric_name = graph_metric.split('/')[-1]
-    ax.set_ylabel(metric_name)
-    ax.set_title(f"Test-set Evaluation: {graph_statistic.capitalize()} {metric_name} vs. Model Version and Scale")
-    ax.set_ylim(bottom=0)
-    ax.legend()
-    ax.grid(axis="y", alpha=0.2)
-    for extension in ("png", "svg"):
-        fig.savefig(comparison_graph_path(summary_csv, metric_name, graph_statistic, extension), dpi=200)
-    return stats, fig
+        trial_label = "Individual trials"
+        for model in models:
+            center = bar_centers[model]
+            points = successful.loc[successful["model"] == model, plot_metric].dropna().to_numpy()
+            if len(points):
+                offsets = [0] if len(points) == 1 else [
+                    0.6 * width * (i / (len(points) - 1) - 0.5) for i in range(len(points))
+                ]
+                ax.scatter([center + offset for offset in offsets], points, color="black", s=24,
+                           zorder=3, label=trial_label)
+                trial_label = None
+            if len(points) != expected_trials:
+                ax.annotate(f"n={len(points)}", (center, 0), xytext=(0, 4),
+                            textcoords="offset points", ha="center", fontsize=8)
+        ax.set_xticks(range(len(versions)), versions)
+        metric_name = plot_metric.split("/")[-1]
+        metric_label = "Inference latency (ms/image)" if plot_metric == "speed_inference_ms" else metric_name
+        ax.set_ylabel(metric_label)
+        ax.set_title(f"Test-set Evaluation: {graph_statistic.capitalize()} {metric_label} vs. Model Version and Scale")
+        ax.set_ylim(bottom=0)
+        ax.legend()
+        ax.grid(axis="y", alpha=0.2)
+        for extension in ("png", "svg"):
+            fig.savefig(comparison_graph_path(summary_csv, metric_name, graph_statistic, extension), dpi=200)
+        if plot_metric == graph_metric:
+            primary_figure = fig
+        else:
+            plt.close(fig)
+    return stats, primary_figure
