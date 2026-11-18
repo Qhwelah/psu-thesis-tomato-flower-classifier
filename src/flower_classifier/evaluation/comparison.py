@@ -1,8 +1,22 @@
 """Compare repeated training trials using an existing evaluation summary."""
 
+import re
 import warnings
 from datetime import datetime
 from pathlib import Path
+
+
+def _model_version_and_scale(model: str) -> tuple[str, str]:
+    match = re.fullmatch(r"yolo(v?\d+)([nslmx])(u?)", model, re.IGNORECASE)
+    if match is None:
+        return model, ""
+    version, scale, suffix = match.groups()
+    return f"YOLO{version.lower()}{suffix.lower()}", scale.lower()
+
+
+def _version_sort_key(version: str) -> tuple[float, str]:
+    match = re.fullmatch(r"YOLOv?(\d+)u?", version)
+    return (int(match[1]) if match else float("inf"), version)
 
 
 def get_latest_summary_csv(results_dir: str | Path) -> Path:
@@ -40,7 +54,8 @@ def compare_model_results(
     Groups exp_<model>_<trial> names by model, using successful trials only.
     Saves both mean and median (plus sample standard deviation, min/max and
     count) for every metric/speed column. The graph shows the chosen statistic
-    and each individual trial. Incomplete groups are included with a warning
+    and each individual trial, with bars grouped by YOLO version and colored
+    by scale. Incomplete groups are included with a warning
     and their actual count, never silently treated as three successful trials.
 
     Returns (statistics_dataframe, figure). Outputs sit beside summary.csv.
@@ -85,14 +100,38 @@ def compare_model_results(
     stats.to_csv(summary_csv.parent / "model_statistics.csv")
 
     values = stats[f"{metric}__{statistic}"]
-    fig, ax = plt.subplots(figsize=(max(8, len(models) * 0.8), 5), layout="constrained")
-    ax.bar(range(len(models)), values, color="#4682b4", alpha=0.8, label=f"Trial {statistic}")
-    for index, model in enumerate(models):
+    model_groups = {model: _model_version_and_scale(model) for model in models}
+    versions = sorted({version for version, _ in model_groups.values()}, key=_version_sort_key)
+    scale_colors = {"n": "tab:blue", "s": "tab:orange", "m": "tab:green",
+                    "l": "tab:red", "x": "tab:purple", "": "tab:gray"}
+    present_scales = {scale for _, scale in model_groups.values()}
+    scales = [scale for scale in scale_colors if scale in present_scales]
+    width = 0.8 / len(scales)
+    fig, ax = plt.subplots(figsize=(max(8, len(models) * 0.65), 5), layout="constrained")
+    bar_centers = {}
+    for scale_index, scale in enumerate(scales):
+        scale_models = [model for model, (_, model_scale) in model_groups.items() if model_scale == scale]
+        offset = (scale_index - (len(scales) - 1) / 2) * width
+        positions = [versions.index(model_groups[model][0]) + offset for model in scale_models]
+        bar_centers.update(zip(scale_models, positions))
+        ax.bar(positions, values.loc[scale_models], width=width, color=scale_colors[scale],
+               label=f"Scale {scale}" if scale else "Unspecified scale")
+
+    trial_label = "Individual trials"
+    for model in models:
+        center = bar_centers[model]
         points = successful.loc[successful["model"] == model, metric].to_numpy()
-        offsets = [0] if len(points) == 1 else [0.3 * (i / (len(points) - 1) - 0.5) for i in range(len(points))]
-        ax.scatter([index + offset for offset in offsets], points, color="black", s=24,
-                   zorder=3, label="Individual trials" if index == 0 else None)
-    ax.set_xticks(range(len(models)), [f"{model}\n(n={int(stats.loc[model, 'successful_trials'])})" for model in models], rotation=45, ha="right")
+        if len(points):
+            offsets = [0] if len(points) == 1 else [
+                0.6 * width * (i / (len(points) - 1) - 0.5) for i in range(len(points))
+            ]
+            ax.scatter([center + offset for offset in offsets], points, color="black", s=24,
+                       zorder=3, label=trial_label)
+            trial_label = None
+        if model in incomplete:
+            ax.annotate(f"n={len(points)}", (center, 0), xytext=(0, 4),
+                        textcoords="offset points", ha="center", fontsize=8)
+    ax.set_xticks(range(len(versions)), versions)
     ax.set_ylabel(metric)
     ax.set_title(f"Test-set comparison: {statistic} across training trials")
     ax.set_ylim(bottom=0)
