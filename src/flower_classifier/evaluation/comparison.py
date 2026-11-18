@@ -64,6 +64,7 @@ def compare_model_results(
 
     Groups exp_<model>_<trial> names by model, using successful trials only.
     Applies csv_aggregations to each metric and speed column in the table.
+    Use "mean_std" to display mean ± sample standard deviation in one column.
     The graph shows graph_statistic for graph_metric and each individual
     trial, with bars grouped by YOLO version and colored by scale. Incomplete
     groups are included with a warning and their actual count.
@@ -77,11 +78,11 @@ def compare_model_results(
         raise ValueError("graph_statistic must be 'mean' or 'median'")
     csv_aggregations = list(dict.fromkeys(csv_aggregations))
     if not csv_aggregations or any(
-        aggregation not in {"count", "mean", "median", "std", "min", "max"}
+        aggregation not in {"count", "mean", "median", "std", "min", "max", "mean_std"}
         for aggregation in csv_aggregations
     ):
         raise ValueError(
-            "csv_aggregations must be a nonempty sequence of count, mean, median, std, min, or max"
+            "csv_aggregations must be a nonempty sequence of count, mean, median, std, min, max, or mean_std"
         )
     summary_csv = Path(summary_csv).expanduser().resolve()
     trials = pd.read_csv(summary_csv)
@@ -114,7 +115,18 @@ def compare_model_results(
         raise ValueError("No usable successful results, or the selected graph metric has missing values.")
 
     grouped = successful.groupby("model")
-    stats = grouped[columns].agg(csv_aggregations)
+    aggregations = [name for name in csv_aggregations if name != "mean_std"]
+    if "mean_std" in csv_aggregations:
+        aggregations = list(dict.fromkeys([*aggregations, "mean", "std"]))
+    stats = grouped[columns].agg(aggregations)
+    if "mean_std" in csv_aggregations:
+        for column in columns:
+            formatted = []
+            for mean, sd in zip(stats[column, "mean"], stats[column, "std"]):
+                sd_text = f"{sd:.4f}" if pd.notna(sd) else "N/A"
+                formatted.append(f"{mean:.4f} ± {sd_text}" if pd.notna(mean) else None)
+            stats[column, "mean_std"] = formatted
+        stats = stats.reindex(columns=pd.MultiIndex.from_product([columns, csv_aggregations]))
     stats.columns = [f"{column}__{aggregation}" for column, aggregation in stats.columns]
     stats = stats.reindex(models)
     stats.insert(0, "successful_trials", grouped.size().reindex(models, fill_value=0))
