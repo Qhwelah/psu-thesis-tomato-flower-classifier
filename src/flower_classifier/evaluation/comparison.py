@@ -42,6 +42,14 @@ def get_latest_summary_csv(results_dir: str | Path) -> Path:
     return max(candidates)[1]
 
 
+def comparison_graph_path(
+    summary_csv: str | Path, metric: str, statistic: str, extension: str = "png"
+) -> Path:
+    """Return the path of a comparison graph saved beside the summary."""
+    filename = metric.replace("/", "_").replace("(", "").replace(")", "")
+    return Path(summary_csv).expanduser().resolve().parent / f"{filename}_{statistic}_graph.{extension}"
+
+
 def compare_model_results(
     summary_csv: str | Path,
     *,
@@ -137,7 +145,6 @@ def compare_model_results(
     ax.set_ylim(bottom=0)
     ax.legend()
     ax.grid(axis="y", alpha=0.2)
-    filename = metric.replace("/", "_").replace("(", "").replace(")", "")
     for extension in ("png", "svg"):
-        fig.savefig(summary_csv.parent / f"{filename}_{statistic}_graph.{extension}", dpi=200)
+        fig.savefig(comparison_graph_path(summary_csv, metric, statistic, extension), dpi=200)
     return stats, fig
