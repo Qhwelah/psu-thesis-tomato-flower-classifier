@@ -2,6 +2,7 @@
 
 import re
 import warnings
+from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 
@@ -57,12 +58,13 @@ def compare_model_results(
     statistic: str = "mean",
     metric: str = "metrics/mAP50-95(B)",
     expected_trials: int = 3,
+    aggregations: Sequence[str] = ("count", "mean", "median", "std", "min", "max"),
 ):
     """Save model statistics and a comparison graph without running inference.
 
     Groups exp_<model>_<trial> names by model, using successful trials only.
-    Saves both mean and median (plus sample standard deviation, min/max and
-    count) for every metric/speed column. The graph shows the chosen statistic
+    Saves the chosen aggregations for every metric/speed column.
+    The graph shows the chosen statistic
     and each individual trial, with bars grouped by YOLO version and colored
     by scale. Incomplete groups are included with a warning
     and their actual count, never silently treated as three successful trials.
@@ -74,6 +76,14 @@ def compare_model_results(
 
     if statistic not in {"mean", "median"}:
         raise ValueError("statistic must be 'mean' or 'median'")
+    aggregations = list(dict.fromkeys(aggregations))
+    if not aggregations or any(
+        aggregation not in {"count", "mean", "median", "std", "min", "max"}
+        for aggregation in aggregations
+    ):
+        raise ValueError(
+            "aggregations must be a nonempty sequence of count, mean, median, std, min, or max"
+        )
     summary_csv = Path(summary_csv).expanduser().resolve()
     trials = pd.read_csv(summary_csv)
     required = {"run", "status", metric}
@@ -105,7 +115,7 @@ def compare_model_results(
         raise ValueError("No usable successful results, or the selected metric has missing values.")
 
     grouped = successful.groupby("model")
-    stats = grouped[columns].agg(["count", "mean", "median", "std", "min", "max"])
+    stats = grouped[columns].agg(aggregations)
     stats.columns = [f"{column}__{aggregation}" for column, aggregation in stats.columns]
     stats = stats.reindex(models)
     stats.insert(0, "successful_trials", grouped.size().reindex(models, fill_value=0))
@@ -118,7 +128,10 @@ def compare_model_results(
         )
     stats.to_csv(summary_csv.parent / "model_statistics.csv")
 
-    values = stats[f"{metric}__{statistic}"]
+    if statistic in aggregations:
+        values = stats[f"{metric}__{statistic}"]
+    else:
+        values = grouped[metric].agg(statistic).reindex(models)
     width = 0.8 / len(scales)
     fig, ax = plt.subplots(figsize=(max(8, len(models) * 0.65), 5), layout="constrained")
     bar_centers = {}
