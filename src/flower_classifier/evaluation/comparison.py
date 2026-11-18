@@ -46,7 +46,8 @@ def comparison_graph_path(
     summary_csv: str | Path, metric: str, statistic: str, extension: str = "png"
 ) -> Path:
     """Return the path of a comparison graph saved beside the summary."""
-    filename = metric.replace("/", "_").replace("(", "").replace(")", "")
+    metric_name = metric.split("/")[-1]
+    filename = metric_name.replace("(", "").replace(")", "")
     return Path(summary_csv).expanduser().resolve().parent / f"{filename}_{statistic}_graph.{extension}"
 
 
@@ -140,11 +141,12 @@ def compare_model_results(
             ax.annotate(f"n={len(points)}", (center, 0), xytext=(0, 4),
                         textcoords="offset points", ha="center", fontsize=8)
     ax.set_xticks(range(len(versions)), versions)
-    ax.set_ylabel(metric)
-    ax.set_title(f"Test-set Evaluation of {statistic} {metric.split('/')[-1]} vs. Model Version and Scale")
+    metric_name = metric.split('/')[-1]
+    ax.set_ylabel(metric_name)
+    ax.set_title(f"Test-set Evaluation: {statistic.capitalize()} {metric_name} vs. Model Version and Scale")
     ax.set_ylim(bottom=0)
     ax.legend()
     ax.grid(axis="y", alpha=0.2)
     for extension in ("png", "svg"):
-        fig.savefig(comparison_graph_path(summary_csv, metric, statistic, extension), dpi=200)
+        fig.savefig(comparison_graph_path(summary_csv, metric_name, statistic, extension), dpi=200)
     return stats, fig
