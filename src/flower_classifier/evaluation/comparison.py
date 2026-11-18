@@ -133,11 +133,11 @@ def compare_model_results(
                         textcoords="offset points", ha="center", fontsize=8)
     ax.set_xticks(range(len(versions)), versions)
     ax.set_ylabel(metric)
-    ax.set_title(f"Test-set comparison: {statistic} across training trials")
+    ax.set_title(f"Test-set Evaluation of {statistic} {metric.split('/')[-1]} vs. Model Version and Scale")
     ax.set_ylim(bottom=0)
     ax.legend()
     ax.grid(axis="y", alpha=0.2)
     filename = metric.replace("/", "_").replace("(", "").replace(")", "")
     for extension in ("png", "svg"):
-        fig.savefig(summary_csv.parent / f"model_comparison_{filename}_{statistic}.{extension}", dpi=200)
+        fig.savefig(summary_csv.parent / f"{filename}_{statistic}_graph.{extension}", dpi=200)
     return stats, fig
