@@ -55,38 +55,37 @@ def comparison_graph_path(
 def compare_model_results(
     summary_csv: str | Path,
     *,
-    statistic: str = "mean",
-    metric: str = "metrics/mAP50-95(B)",
+    graph_statistic: str = "mean",
+    graph_metric: str = "metrics/mAP50-95(B)",
     expected_trials: int = 3,
-    aggregations: Sequence[str] = ("count", "mean", "median", "std", "min", "max"),
+    csv_aggregations: Sequence[str] = ("count", "mean", "median", "std", "min", "max"),
 ):
     """Save model statistics and a comparison graph without running inference.
 
     Groups exp_<model>_<trial> names by model, using successful trials only.
-    Saves the chosen aggregations for every metric/speed column.
-    The graph shows the chosen statistic
-    and each individual trial, with bars grouped by YOLO version and colored
-    by scale. Incomplete groups are included with a warning
-    and their actual count, never silently treated as three successful trials.
+    Applies csv_aggregations to each metric and speed column in the table.
+    The graph shows graph_statistic for graph_metric and each individual
+    trial, with bars grouped by YOLO version and colored by scale. Incomplete
+    groups are included with a warning and their actual count.
 
     Returns (statistics_dataframe, figure). Outputs sit beside summary.csv.
     """
     import matplotlib.pyplot as plt
     import pandas as pd
 
-    if statistic not in {"mean", "median"}:
-        raise ValueError("statistic must be 'mean' or 'median'")
-    aggregations = list(dict.fromkeys(aggregations))
-    if not aggregations or any(
+    if graph_statistic not in {"mean", "median"}:
+        raise ValueError("graph_statistic must be 'mean' or 'median'")
+    csv_aggregations = list(dict.fromkeys(csv_aggregations))
+    if not csv_aggregations or any(
         aggregation not in {"count", "mean", "median", "std", "min", "max"}
-        for aggregation in aggregations
+        for aggregation in csv_aggregations
     ):
         raise ValueError(
-            "aggregations must be a nonempty sequence of count, mean, median, std, min, or max"
+            "csv_aggregations must be a nonempty sequence of count, mean, median, std, min, or max"
         )
     summary_csv = Path(summary_csv).expanduser().resolve()
     trials = pd.read_csv(summary_csv)
-    required = {"run", "status", metric}
+    required = {"run", "status", graph_metric}
     if not required.issubset(trials.columns):
         raise ValueError(f"Missing required columns: {sorted(required - set(trials.columns))}")
     names = trials["run"].str.extract(r"^exp_(?P<model>.+)_(?P<trial>\d+)$")
@@ -111,11 +110,11 @@ def compare_model_results(
     columns = [c for c in trials if c.startswith(("metrics/", "speed_"))]
     for column in columns:
         successful[column] = pd.to_numeric(successful[column], errors="raise")
-    if successful.empty or successful[metric].isna().any():
-        raise ValueError("No usable successful results, or the selected metric has missing values.")
+    if successful.empty or successful[graph_metric].isna().any():
+        raise ValueError("No usable successful results, or the selected graph metric has missing values.")
 
     grouped = successful.groupby("model")
-    stats = grouped[columns].agg(aggregations)
+    stats = grouped[columns].agg(csv_aggregations)
     stats.columns = [f"{column}__{aggregation}" for column, aggregation in stats.columns]
     stats = stats.reindex(models)
     stats.insert(0, "successful_trials", grouped.size().reindex(models, fill_value=0))
@@ -128,10 +127,10 @@ def compare_model_results(
         )
     stats.to_csv(summary_csv.parent / "model_statistics.csv")
 
-    if statistic in aggregations:
-        values = stats[f"{metric}__{statistic}"]
+    if graph_statistic in csv_aggregations:
+        values = stats[f"{graph_metric}__{graph_statistic}"]
     else:
-        values = grouped[metric].agg(statistic).reindex(models)
+        values = grouped[graph_metric].agg(graph_statistic).reindex(models)
     width = 0.8 / len(scales)
     fig, ax = plt.subplots(figsize=(max(8, len(models) * 0.65), 5), layout="constrained")
     bar_centers = {}
@@ -146,7 +145,7 @@ def compare_model_results(
     trial_label = "Individual trials"
     for model in models:
         center = bar_centers[model]
-        points = successful.loc[successful["model"] == model, metric].to_numpy()
+        points = successful.loc[successful["model"] == model, graph_metric].to_numpy()
         if len(points):
             offsets = [0] if len(points) == 1 else [
                 0.6 * width * (i / (len(points) - 1) - 0.5) for i in range(len(points))
@@ -158,12 +157,12 @@ def compare_model_results(
             ax.annotate(f"n={len(points)}", (center, 0), xytext=(0, 4),
                         textcoords="offset points", ha="center", fontsize=8)
     ax.set_xticks(range(len(versions)), versions)
-    metric_name = metric.split('/')[-1]
+    metric_name = graph_metric.split('/')[-1]
     ax.set_ylabel(metric_name)
-    ax.set_title(f"Test-set Evaluation: {statistic.capitalize()} {metric_name} vs. Model Version and Scale")
+    ax.set_title(f"Test-set Evaluation: {graph_statistic.capitalize()} {metric_name} vs. Model Version and Scale")
     ax.set_ylim(bottom=0)
     ax.legend()
     ax.grid(axis="y", alpha=0.2)
     for extension in ("png", "svg"):
-        fig.savefig(comparison_graph_path(summary_csv, metric_name, statistic, extension), dpi=200)
+        fig.savefig(comparison_graph_path(summary_csv, metric_name, graph_statistic, extension), dpi=200)
     return stats, fig
