@@ -86,7 +86,17 @@ def compare_model_results(
     trials["trial"] = trials["trial"].astype(int)
     if trials.duplicated(["model", "trial"]).any():
         raise ValueError("Duplicate model/trial rows; use one evaluation summary at a time.")
-    models = sorted(trials["model"].unique())
+    model_groups = {model: _model_version_and_scale(model) for model in trials["model"].unique()}
+    versions = sorted({version for version, _ in model_groups.values()}, key=_version_sort_key)
+    scale_colors = {"n": "tab:blue", "s": "tab:orange", "m": "tab:green",
+                    "l": "tab:red", "x": "tab:purple", "": "tab:gray"}
+    present_scales = {scale for _, scale in model_groups.values()}
+    scales = [scale for scale in scale_colors if scale in present_scales]
+    models = sorted(
+        model_groups,
+        key=lambda model: (versions.index(model_groups[model][0]),
+                           scales.index(model_groups[model][1]), model),
+    )
     successful = trials.loc[trials["status"] == "ok"].copy()
     columns = [c for c in trials if c.startswith(("metrics/", "speed_"))]
     for column in columns:
@@ -109,17 +119,11 @@ def compare_model_results(
     stats.to_csv(summary_csv.parent / "model_statistics.csv")
 
     values = stats[f"{metric}__{statistic}"]
-    model_groups = {model: _model_version_and_scale(model) for model in models}
-    versions = sorted({version for version, _ in model_groups.values()}, key=_version_sort_key)
-    scale_colors = {"n": "tab:blue", "s": "tab:orange", "m": "tab:green",
-                    "l": "tab:red", "x": "tab:purple", "": "tab:gray"}
-    present_scales = {scale for _, scale in model_groups.values()}
-    scales = [scale for scale in scale_colors if scale in present_scales]
     width = 0.8 / len(scales)
     fig, ax = plt.subplots(figsize=(max(8, len(models) * 0.65), 5), layout="constrained")
     bar_centers = {}
     for scale_index, scale in enumerate(scales):
-        scale_models = [model for model, (_, model_scale) in model_groups.items() if model_scale == scale]
+        scale_models = [model for model in models if model_groups[model][1] == scale]
         offset = (scale_index - (len(scales) - 1) / 2) * width
         positions = [versions.index(model_groups[model][0]) + offset for model in scale_models]
         bar_centers.update(zip(scale_models, positions))
