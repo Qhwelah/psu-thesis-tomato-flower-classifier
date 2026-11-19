@@ -178,7 +178,7 @@ def compare_model_results(
         metric_label = "Inference latency (ms/image)" if plot_metric == "speed_inference_ms" else metric_name
         ax.set_ylabel(metric_label)
         ax.set_title(f"Test-set Evaluation: {graph_statistic.capitalize()} {metric_label} vs. Model Version and Scale")
-        ax.set_ylim(bottom=0)
+        ax.set_ylim(bottom=0, top=1 if metric_name.startswith("mAP") else None)
         ax.legend()
         ax.grid(axis="y", alpha=0.2)
         for extension in ("png", "svg"):
