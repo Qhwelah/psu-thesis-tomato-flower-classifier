@@ -1,2 +1,3 @@
 from .evaluation import evaluate_best_checkpoints
 from .comparison import compare_model_results, comparison_graph_path, get_latest_summary_csv
+from .training_curve import plot_training_map
