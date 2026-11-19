@@ -63,6 +63,7 @@ def compare_model_results(
     """Save model statistics and a comparison graph without running inference.
 
     Groups exp_<model>_<trial> names by model, using successful trials only.
+    Computes trial-level F1 when box precision and recall are available.
     Applies csv_aggregations to each metric and speed column in the table.
     Use "mean_std" to display mean ± sample standard deviation in one column.
     Each graph shows graph_statistic and individual trials for one metric,
@@ -88,9 +89,16 @@ def compare_model_results(
         )
     summary_csv = Path(summary_csv).expanduser().resolve()
     trials = pd.read_csv(summary_csv)
-    required = {"run", "status", *graph_metrics}
-    if not required.issubset(trials.columns):
-        raise ValueError(f"Missing required columns: {sorted(required - set(trials.columns))}")
+    precision_column = "metrics/precision(B)"
+    recall_column = "metrics/recall(B)"
+    f1_column = "metrics/F1(B)"
+    has_precision_recall = {precision_column, recall_column}.issubset(trials.columns)
+    available_columns = set(trials.columns)
+    if has_precision_recall:
+        available_columns.add(f1_column)
+    missing_columns = {"run", "status", *graph_metrics} - available_columns
+    if missing_columns:
+        raise ValueError(f"Missing required columns: {sorted(missing_columns)}")
     names = trials["run"].str.extract(r"^exp_(?P<model>.+)_(?P<trial>\d+)$")
     if names.isna().any().any():
         raise ValueError("Every run must be named exp_<model>_<trial number>.")
@@ -113,6 +121,15 @@ def compare_model_results(
     columns = [c for c in trials if c.startswith(("metrics/", "speed_"))]
     for column in columns:
         successful[column] = pd.to_numeric(successful[column], errors="raise")
+    if has_precision_recall:
+        precision = successful[precision_column]
+        recall = successful[recall_column]
+        total = precision + recall
+        f1 = 2 * precision * recall / total
+        successful[f1_column] = f1.mask(precision.eq(0) & recall.eq(0), 0.0)
+        if f1_column in columns:
+            columns.remove(f1_column)
+        columns.insert(columns.index(recall_column) + 1, f1_column)
     missing_metrics = [metric for metric in graph_metrics if successful[metric].notna().sum() == 0]
     if missing_metrics:
         raise ValueError(f"No usable successful results for graph metrics: {missing_metrics}")
