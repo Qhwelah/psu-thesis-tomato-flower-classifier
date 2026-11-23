@@ -108,8 +108,8 @@ def compare_model_results(
         raise ValueError("Duplicate model/trial rows; use one evaluation summary at a time.")
     model_groups = {model: _model_version_and_scale(model) for model in trials["model"].unique()}
     versions = sorted({version for version, _ in model_groups.values()}, key=_version_sort_key)
-    scale_colors = {"n": "tab:blue", "s": "tab:orange", "m": "tab:green",
-                    "l": "tab:red", "x": "tab:purple", "": "tab:gray"}
+    scale_colors = {"n": "tab:lightsteelblue", "s": "tab:cornflowerblue", "m": "tab:royalblue",
+                    "l": "tab:blue", "x": "tab:navy", "": "tab:gray"}
     present_scales = {scale for _, scale in model_groups.values()}
     scales = [scale for scale in scale_colors if scale in present_scales]
     models = sorted(
@@ -185,7 +185,7 @@ def compare_model_results(
                     0.6 * width * (i / (len(points) - 1) - 0.5) for i in range(len(points))
                 ]
                 ax.scatter([center + offset for offset in offsets], points, color="black", s=24,
-                           zorder=3, label=trial_label)
+                           edgecolors="white", linewidths=0.7, zorder=3, label=trial_label)
                 trial_label = None
             if len(points) != expected_trials:
                 ax.annotate(f"n={len(points)}", (center, 0), xytext=(0, 4),
