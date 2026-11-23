@@ -108,8 +108,8 @@ def compare_model_results(
         raise ValueError("Duplicate model/trial rows; use one evaluation summary at a time.")
     model_groups = {model: _model_version_and_scale(model) for model in trials["model"].unique()}
     versions = sorted({version for version, _ in model_groups.values()}, key=_version_sort_key)
-    scale_colors = {"n": "tab:lightsteelblue", "s": "tab:cornflowerblue", "m": "tab:royalblue",
-                    "l": "tab:blue", "x": "tab:navy", "": "tab:gray"}
+    scale_colors = {"n": "lightsteelblue", "s": "cornflowerblue", "m": "royalblue",
+                    "l": "blue", "x": "navy", "": "slategray"}
     present_scales = {scale for _, scale in model_groups.values()}
     scales = [scale for scale in scale_colors if scale in present_scales]
     models = sorted(
